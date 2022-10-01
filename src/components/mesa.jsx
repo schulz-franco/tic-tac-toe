@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { AiOutlineReload } from "react-icons/ai"
 
 const posicionesGanadoras = [
     [0, 1, 2],
@@ -17,11 +18,12 @@ const Casilla = ({ valor, onClick, turno })=> {
         (turno !== null && valor === null) && onClick()
     }
 
-    let clase = (valor)=> {
+    const clase = (valor)=> {
+        let claseValor = ""
         if (valor !== null) {
-            return valor === "x" ? "equis" : "circulo"
+            claseValor = valor === "x" ? "equis" : "circulo"
         }
-        return ""
+        return claseValor
     }
 
     return <div onClick={()=> onClickHandler(valor)} className={"casilla " + clase(valor)} />
@@ -31,8 +33,22 @@ const Tablero = ({ casillas, onClick, turno })=> {
     return(
         <div className="tablero">
             {casillas.map((casilla, index) => {
-                return <Casilla key={index} valor={casilla} onClick={()=> onClick(index)} turno={turno} />
+                return <Casilla 
+                key={index} 
+                valor={casilla} 
+                onClick={()=> onClick(index)} 
+                turno={turno} />
             })}
+        </div>
+    )
+}
+
+const Puntuacion = ({ puntos, reset })=> {
+    return(
+        <div className="puntuacion">
+            <span>{puntos[0]}</span>
+            <span>{puntos[1]}</span>
+            <span onClick={reset}><AiOutlineReload /></span>
         </div>
     )
 }
@@ -41,6 +57,7 @@ const Mesa = () => {
 
     const [turno, setTurno] = useState("x")
     const [casillas, setCasillas] = useState(Array(9).fill(null))
+    const [puntuacion, setPuntuacion] = useState([0, 0])
 
     const checkearGanador = (copiaCasillas)=> {
         for (let index = 0; index < posicionesGanadoras.length; index++) {
@@ -57,6 +74,12 @@ const Mesa = () => {
         setTurno(turno === "x" ? "o" : "x")
     }
 
+    const resetearPartida = ()=> {
+        setTurno("x")
+        setCasillas(Array(9).fill(null))
+        setPuntuacion([0, 0])
+    }
+
     const onClickHandler = casilla => {
         let copiaCasillas = [...casillas]
         copiaCasillas.splice(casilla, 1, turno)
@@ -66,15 +89,25 @@ const Mesa = () => {
 
     const reiniciarPartida = (ganador, posicionGanadora)=> {
         setTurno(null)
+        if (ganador) {
+            let copiaPuntuacion = puntuacion
+            if (ganador === "x") {
+                copiaPuntuacion[0] = puntuacion[0] + 1
+            } else {
+                copiaPuntuacion[1] = puntuacion[1] + 1
+            }
+            setPuntuacion(copiaPuntuacion)
+        }
         setTimeout(()=> {
             setCasillas(Array(9).fill(null))
             setTurno("x")
-        }, 2000)
+        }, 1000)
     }
 
     return (
         <div className="main-container">
             <Tablero turno={turno} casillas={casillas} onClick={onClickHandler} />
+            <Puntuacion puntos={puntuacion} reset={resetearPartida} />
         </div>
     )
 }
